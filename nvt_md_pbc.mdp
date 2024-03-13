@@ -1,0 +1,48 @@
+; Processing
+define = -DPOSRES		; DPOSRES为位置约束,也可以使用DFLEXIBLE定义柔性水
+
+; Run Control
+integrator = md			; 积分器,md是其中一种算法
+dt         = 0.002   		; intergration的时间步长,单位ps
+nsteps     = 100000000		; integrate的最大步数
+comm-grps  = system		; 对于质心运动的消除,默认为整个system
+
+; Output Control
+nstxout = 250000		; 写入轨迹坐标,0不写入, 500ps
+nstvout = 250000	; 写入速度,0不写入
+nstfout = 250000		; 写入力,0不写入
+nstlog  = 250000		; 将能量写入日志, 总是写入,不可设置0
+nstenergy = 250000		; 将能量写入能量文件, 总是写入, 需为nstcalcenergy的倍数,这里没有设置nstcalcenergy;
+nstxout-compressed = 250000  	; 写入压缩的xtc坐标
+compressed-x-grps  = system	; 写入压缩对象,如果nstxout-compressed>0,默认为整个system写入
+
+; Neighbor searching
+cutoff-scheme = verlet		; 生成具有缓冲的pair list,使用rlist参数;
+nstlist = 40			; 更新邻居列表的频率,使用GPU时,20 or 40性能最好
+pbc = xyz			; xyz三个方向使用周期性
+periodic-molecules = yes	; 对于周期性边界不完整的分子,使用较慢的PBC算法
+rlist = 2.0			; 短程邻居列表的截止距离,单位nm, 如果有verlet-buffer-tolerance, 间接生成rlist, rlist可不设置
+
+; Electrostatics
+coulombtype   = PME		; 库伦力类型,Fast smooth Particle-Mesh Ewald(SPME)静电, 
+rcoulomb      = 2.0		; 库伦截止距离,单位nm
+
+; Van der Waals
+vdwtype       = cut-off		; pair list 半径rlist的普通截断,VdW截止参数为rvdw, 需rlist >= rvdw
+rvdw          = 2.0		; LJ or Buckingham 截止距离,单位nm
+DispCorr      = no		; no 不使用任何校正, EnerPres对能量和压力进行色散校正, Ener只对能量进行色散校正
+
+; Temperature coupling
+Tcoupl  = V-rescale		; 恒温器方法
+tc_grps = system		; 温度耦合的组,可根据实际分组
+tau_t   = 0.2			; 耦合时间常数,单位ps
+ref_t   = 523			; 耦合参考温度,单位K
+
+; Velocity generation
+gen_vel  = yes			; 根据麦克斯韦分布生成速度,只有当integrator=md时有意义
+gen_temp = 523			; 麦克斯韦分布温度,单位K
+gen_seed = -1			; 用于初始化随机速度的随机发生器, -1使用伪随机种子
+
+; Bonds		
+constraints = hbonds		; 约束氢键
+
